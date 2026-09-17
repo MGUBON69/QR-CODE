@@ -3,110 +3,164 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Code FREE</title>
-  <!-- Tailwind CSS CDN สำหรับจัดแต่ง UI ให้สวยงาม -->
+  <title>QR Code Generator - Free & Fast</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- QRCode.js Library สำหรับสร้าง QR Code บน Client-side -->
+  <!-- QRCode.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
 
   <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
-    <h1 class="text-2xl font-bold text-slate-800 text-center mb-2">QR Code FREE</h1>
-    <p class="text-sm text-slate-500 text-center mb-6">วางลิงก์ที่ต้องการเพื่อสร้าง QR Code ทันที ไม่มีโฆษณา</p>
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold text-slate-800 mb-1">QR Code Generator</h1>
+      <p class="text-sm text-slate-500">สร้าง QR Code ฟรี ไม่มีหมดอายุ คมชัดสูง</p>
+    </div>
 
-    <!-- Form Input -->
+    <!-- Form Input Section -->
     <div class="space-y-4">
       <div>
-        <label for="url-input" class="block text-sm font-medium text-slate-700 mb-1">URL / ลิงก์</label>
+        <label for="url-input" class="block text-sm font-medium text-slate-700 mb-1">ข้อความ หรือ URL</label>
         <input 
-          type="url" 
+          type="text" 
           id="url-input" 
-          placeholder="https://example.com" 
+          placeholder="https://example.com หรือ ข้อความทั่วไป" 
           class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-800"
         />
+        <p id="error-msg" class="text-xs text-rose-500 mt-1 hidden">กรุณากรอกข้อมูลก่อนสร้าง QR Code ค่ะ</p>
       </div>
 
+      <!-- Color Selection (Customization) -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="fg-color" class="block text-xs font-medium text-slate-600 mb-1">สีเส้น QR Code</label>
+          <input type="color" id="fg-color" value="#000000" class="w-full h-9 p-1 rounded border border-slate-300 cursor-pointer">
+        </div>
+        <div>
+          <label for="bg-color" class="block text-xs font-medium text-slate-600 mb-1">สีพื้นหลัง</label>
+          <input type="color" id="bg-color" value="#ffffff" class="w-full h-9 p-1 rounded border border-slate-300 cursor-pointer">
+        </div>
+      </div>
+
+      <!-- Generate Button -->
       <button 
         id="generate-btn" 
-        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
+        class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
       >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
         สร้าง QR Code
       </button>
     </div>
 
     <!-- QR Code Display Container -->
-    <div id="qr-container" class="mt-8 flex flex-col items-center justify-center hidden">
-      <div id="qrcode" class="p-4 bg-white border border-slate-200 rounded-xl shadow-inner"></div>
+    <div id="qr-container" class="mt-8 flex flex-col items-center justify-center hidden border-t border-slate-100 pt-6">
+      <div id="qrcode" class="p-4 bg-white border border-slate-200 rounded-xl shadow-inner flex justify-center items-center"></div>
       
-      <!-- Download Button -->
-      <a 
-        id="download-btn" 
-        href="#" 
-        download="qrcode.png" 
-        class="mt-4 px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition"
-      >
-        ดาวน์โหลดรูปภาพ
-      </a>
+      <!-- Action Buttons -->
+      <div class="mt-5 w-full flex gap-2">
+        <button 
+          id="download-btn" 
+          class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 shadow"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          ดาวน์โหลด PNG
+        </button>
+      </div>
     </div>
   </div>
 
   <script>
-    // ดึง Element ที่ต้องใช้งาน
+    // DOM Elements Declaration
     const urlInput = document.getElementById('url-input');
+    const fgColorInput = document.getElementById('fg-color');
+    const bgColorInput = document.getElementById('bg-color');
     const generateBtn = document.getElementById('generate-btn');
     const qrContainer = document.getElementById('qr-container');
     const qrCodeDiv = document.getElementById('qrcode');
     const downloadBtn = document.getElementById('download-btn');
+    const errorMsg = document.getElementById('error-msg');
 
     let qrCodeInstance = null;
 
-    // ฟังก์ชันสร้าง QR Code
+    // Function to Generate QR Code
     function generateQRCode() {
-      const url = urlInput.value.trim();
+      const textValue = urlInput.value.trim();
 
-      // ตรวจสอบความถูกต้องของ Input
-      if (!url) {
-        alert('กรุณากรอกหรือวางลิงก์ก่อนครับ');
+      // Basic Validation Check
+      if (!textValue) {
+        errorMsg.classList.remove('hidden');
+        urlInput.classList.add('border-rose-500');
         return;
       }
 
-      // ล้างพื้นที่ QR Code เดิมก่อนสร้างใหม่
+      // Clear previous validation state & Canvas content
+      errorMsg.classList.add('hidden');
+      urlInput.classList.remove('border-rose-500');
       qrCodeDiv.innerHTML = '';
 
-      // สร้าง QR Code ใหม่ด้วย QRCode.js
+      // Create new QR Code instance with high resolution setting
       qrCodeInstance = new QRCode(qrCodeDiv, {
-        text: url,
-        width: 200,
-        height: 200,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H // ค่าความละเอียดระดับสูง (เผื่อใส่โลโก้หรือกันภาพขีดข่วน)
+        text: textValue,
+        width: 220,
+        height: 220,
+        colorDark: fgColorInput.value,
+        colorLight: bgColorInput.value,
+        correctLevel: QRCode.CorrectLevel.H // High Error Correction
       });
 
-      // แสดงส่วนแสดงผล QR Code
+      // Reveal the result section
       qrContainer.classList.remove('hidden');
-
-      // รอเล็กน้อยเพื่อให้ Canvas/Image สมบูรณ์ แล้วอัปเดตลิงก์ดาวน์โหลด
-      setTimeout(() => {
-        const img = qrCodeDiv.querySelector('img');
-        const canvas = qrCodeDiv.querySelector('canvas');
-        
-        if (img && img.src) {
-          downloadBtn.href = img.src;
-        } else if (canvas) {
-          downloadBtn.href = canvas.toDataURL("image/png");
-        }
-      }, 100);
     }
 
-    // ผูก Event Listener เมื่อคลิกปุ่ม
-    generateBtn.addEventListener('click', generateQRCode);
+    // Function to Handle High-Quality Download
+    function downloadQRCode() {
+      // Find Canvas created by qrcode.js or generated Img
+      const canvas = qrCodeDiv.querySelector('canvas');
+      const img = qrCodeDiv.querySelector('img');
 
-    // รองรับการกด Enter ในช่อง Input
+      let imageSrc = '';
+
+      if (canvas) {
+        imageSrc = canvas.toDataURL('image/png');
+      } else if (img && img.src) {
+        imageSrc = img.src;
+      }
+
+      if (!imageSrc) {
+        alert('เกิดข้อผิดพลาดในการดาวน์โหลด กรุณาลองใหม่อีกครั้งค่ะ');
+        return;
+      }
+
+      // Create dynamic temporary link to trigger download programmatically
+      const link = document.createElement('a');
+      link.href = imageSrc;
+      link.download = `qrcode-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Event Listeners
+    generateBtn.addEventListener('click', generateQRCode);
+    downloadBtn.addEventListener('click', downloadQRCode);
+
+    // Support 'Enter' key submit
     urlInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         generateQRCode();
+      }
+    });
+
+    // Clear error message on typing
+    urlInput.addEventListener('input', () => {
+      if (urlInput.value.trim()) {
+        errorMsg.classList.add('hidden');
+        urlInput.classList.remove('border-rose-500');
       }
     });
   </script>
