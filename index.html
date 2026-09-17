@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <!-- Tailwind CSS CDN สำหรับจัดแต่ง UI ให้สวยงาม -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- QRCode.js Library สำหรับสร้าง QR Code บน Client-side -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+  <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+    <h1 class="text-2xl font-bold text-slate-800 text-center mb-2">QR Code Generator</h1>
+    <p class="text-sm text-slate-500 text-center mb-6">วางลิงก์ที่ต้องการเพื่อสร้าง QR Code ทันที</p>
+
+    <!-- Form Input -->
+    <div class="space-y-4">
+      <div>
+        <label for="url-input" class="block text-sm font-medium text-slate-700 mb-1">URL / ลิงก์</label>
+        <input 
+          type="url" 
+          id="url-input" 
+          placeholder="https://example.com" 
+          class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-800"
+        />
+      </div>
+
+      <button 
+        id="generate-btn" 
+        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
+      >
+        สร้าง QR Code
+      </button>
+    </div>
+
+    <!-- QR Code Display Container -->
+    <div id="qr-container" class="mt-8 flex flex-col items-center justify-center hidden">
+      <div id="qrcode" class="p-4 bg-white border border-slate-200 rounded-xl shadow-inner"></div>
+      
+      <!-- Download Button -->
+      <a 
+        id="download-btn" 
+        href="#" 
+        download="qrcode.png" 
+        class="mt-4 px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition"
+      >
+        ดาวน์โหลดรูปภาพ
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // ดึง Element ที่ต้องใช้งาน
+    const urlInput = document.getElementById('url-input');
+    const generateBtn = document.getElementById('generate-btn');
+    const qrContainer = document.getElementById('qr-container');
+    const qrCodeDiv = document.getElementById('qrcode');
+    const downloadBtn = document.getElementById('download-btn');
+
+    let qrCodeInstance = null;
+
+    // ฟังก์ชันสร้าง QR Code
+    function generateQRCode() {
+      const url = urlInput.value.trim();
+
+      // ตรวจสอบความถูกต้องของ Input
+      if (!url) {
+        alert('กรุณากรอกหรือวางลิงก์ก่อนครับ');
+        return;
+      }
+
+      // ล้างพื้นที่ QR Code เดิมก่อนสร้างใหม่
+      qrCodeDiv.innerHTML = '';
+
+      // สร้าง QR Code ใหม่ด้วย QRCode.js
+      qrCodeInstance = new QRCode(qrCodeDiv, {
+        text: url,
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H // ค่าความละเอียดระดับสูง (เผื่อใส่โลโก้หรือกันภาพขีดข่วน)
+      });
+
+      // แสดงส่วนแสดงผล QR Code
+      qrContainer.classList.remove('hidden');
+
+      // รอเล็กน้อยเพื่อให้ Canvas/Image สมบูรณ์ แล้วอัปเดตลิงก์ดาวน์โหลด
+      setTimeout(() => {
+        const img = qrCodeDiv.querySelector('img');
+        const canvas = qrCodeDiv.querySelector('canvas');
+        
+        if (img && img.src) {
+          downloadBtn.href = img.src;
+        } else if (canvas) {
+          downloadBtn.href = canvas.toDataURL("image/png");
+        }
+      }, 100);
+    }
+
+    // ผูก Event Listener เมื่อคลิกปุ่ม
+    generateBtn.addEventListener('click', generateQRCode);
+
+    // รองรับการกด Enter ในช่อง Input
+    urlInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        generateQRCode();
+      }
+    });
+  </script>
+</body>
+</html>
